@@ -1,0 +1,181 @@
+CARACTERISTICAS COMUNES DE NOSQL
+
+--open source
+ siempre disponible, consistencia eventula y estado suave y en vez de consistente
+ TEOREMA DE CAP.
+ 
+--cluster friendly
+
+--sin esquema
+
+--web del s xxi
+
+--No relacional
+
+no es buena para revers lookups
+
+COLUMNA ANCHA:
+para grandes columnas (en peso)
+
+columna ancha guarda por columna. en cada lugar de memoria pone todo los valores de cada columna juntos. Esto hace que sea mas rapido
+(a diferencia de sql, que guardaba por fila, y para recuperar un valor de una columna tenia que recorrer todos lso lugares de memoria separados y "lejos"
+
+sql para leer es mas lenta, para modificar es mas rapido
+
+GRAFOS BD:
+Antes no eran cluster friendly. Solo podian correr en un servidor
+Los grafos estan enfocados en las relaciones, no en los datos. Por ej, para relacionar peliculas con actores, y efectos especiale.s Entonces podes buscar todos los actores que trabajaron en tales peliculas y con efectos especiales
+
+BD MULTI-MODELO
+Para guardar grafos, sql, o columna ancha. 
+
+BD DOCUMENTALES
+documentos JSON. pueden acceder a cualquier propiedad json para leer, modificar, insertar.
+"habla" json
+
+HAY DIFERENTES ARQUITECTURAS:
+Mongo eligio: 
+- Replica set
+- Shardins.
+
+Replica set: 
+Es un servidor, un nodo de mi bd
+Permite tener alta disponibilidad
+que sean durables, que se puedan mantener, y que se puedan recuperar si se apaga el servidor
+aplication > driver > replicaset
+
+en gral nos vamo a comnicar con el nodo primario. estos nodos tendran toda la misma info.
+cada info que obtenga el ndo 1, se va a replicar en los nodos secundarios
+
+heartbeat> estan todo el tiempo comunicandose, para mirar en que estado estan
+
+todos los nodos van guardando todo lo que guaden los nodos 1. Son como copias de seguridad.
+El nodo mas actualizado es el que tomara el papel de nodo primario si se baja o se cae
+
+los nodos pueden estar geograficamente en lugares distintos (asia, europa, america)
+
+el nodo 2 qeu reemplaza al nodo 1 seguira comunicandose con el nodo 3.
+
+Cuando se levanta el nodo 1 se hace el recovery desde que se bajò, automaticamente
+
+cuando la mitad+1 esta actualizado muestra los datos, igual se puede modificar.
+
+Sharding: Escalabilidad horizontal
+Cuando no entran mas datos en un servidor, se hace un particion y se reparte en dos servidores. Mongo lo hace en forma nativa
+
+Cada sharding tendra su replica set. (la misma estructura, primario y secundario)
+
+MODELADO Y CARDINALIDAD
+
+Hay que desnormalizar. Va a haber datos redundantes todo el tiempo
+
+El primer ejemplo de uno a muchos tiene problemas de consistencia, porque si cambia el nombre del que hizo el comentario n ose va a actualizar ahi.
+
+MONGO
+Los datos que podemos escribir son los datos javascript (obj json)
+BSON 
+extiende los del leng javascript y le añade mas tipos de datos
+
+Tipo ObjectID (_id) > Formado por 12 bits (4. timestamp, 3 id de maquina, 2 id de usuario, 3 random)
+Garantiza que sea unico
+
+tabla = coleccion
+row= documentos
+join = documento embebido
+foreign key = referencia
+
+QUERIES
+find 
+insert
+update
+remove
+
+Para conectar o crear un bd. Ej:
+> use test2
+> show collections
+
+> db
+test2
+
+> dp.help()
+
+para insertar un dato en una colecion
+> db.personas (hace referencia a la coleccion. si no existe la crea)
+> db.personas.insert({})
+writeResult({"nInserted": 1})
+> dp.ersonas.find()
+{ "_id" : ObjectId("2342343223kjlkj43")}
+
+Si la coleccion no tiene objeto id, mongo lo crea
+
+> db.personas.insert({name: "Sabri"})
+
+> > db.personas.insert({_id: 1, name: "Sabri"})
+
+MONGO deja todo lo que es logica fuera de la bd (trigers etc)
+
+> db.personas.insert({name: "sabri"}, {obj de congiguracin options})
+
+> db.personas.insert([{}, {}, {}])
+
+> db.personas.insertOne({}) //para asegurarme que inserto 1, y devuelve el id de lo que insertè
+
+> db.personas.insertMany({},{},{}) //igual que insertOne
+
+> db.personas.update({condicion}, {name: "Pepe"}, {}) //si la condicion esta vacia, modifica el primero
+> db.personas.updateOne
+> db.personas.updateMany() //permite modificar muchos documentos que coincidan con la condicion
+
+> db.personas.remove({}) //sin condicion vacia la tabla
+
+TIPOS DE BUSQUEDAS (FIND)
+rich QUERIES = find (busca en todo el doc json)
+Geospatial
+Text search = busca todo lo parecido a lo que escirbi
+Aggregation = Aggregation es un framework de javascript. Simula joins, groupby etc
+Map Reduce = Otro framework de Mongo. Similar al map reduce de javascript
+
+Find: Operadores
+> db.productos.find({cantidad: 10})
+> db.productos.find({cantidad: 10, tipo: "Alfajor"}) //la coma seria un and
+> db.productos.find({cantidad: {$gt:1, $lt:10}}) mayor que (great than) y menor que (less than)
+> db.productos.find({$and.... //and es para dos condiciones sobre una misma propiedad $ne = distinto $exists
+
+
+data > db > todas las bases de datos
+
+//comando para importar archivo
+> mongoimport -d (para indicar la bd en la que lo quiero cargar) nombreDeBaseDatos -c nombreColeccion --jsonArray (tipo de archivo) persona2.json (toda la ruta de ubicacioan del archivo)
+
+> use personas
+> show collections
+> db.personas.count()
+> db.personas.find().pretty() (muestra de forma mas legible todo el documento json)
+
+para prender el servidor escribo:
+> mongod
+
+para trabajar en mongo escribo:
+> mongo
+
+> db.personas.update({}, {$set: {sueldo: 10}}) //si no pongo el operador set va a reemplazar todo el obj 
+> db.personas.find().limit(1)
+
+> db.personas.update({}, {$set: {sueldo: 10}}, {mlti:true}) //modifica todos
+> db.personas.updateMany({}, {$set: {sueldo: 10}}) //modifica todos (igual que el anterior)
+
+upsert: true //si no encuentra un docum con lo que le pase, crea uno
+
+$unset para borrar
+
+updateOne para asegurarnos que modifique solo 1
+
+
+
+
+
+
+
+
+
+
